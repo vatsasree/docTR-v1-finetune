@@ -157,8 +157,8 @@ def main(args):
     system_available_memory = int(psutil.virtual_memory().available / 1024**3)
 
     
-    print("Current GPU memory usage (in bytes):", torch.cuda.memory_allocated())
-    print("Maximum GPU memory usage (in bytes):", torch.cuda.max_memory_allocated())
+    # print("Current GPU memory usage (in bytes):", torch.cuda.memory_allocated())
+    # print("Maximum GPU memory usage (in bytes):", torch.cuda.max_memory_allocated())
 
     st = time.time()
     val_set = DetectionDataset(
@@ -284,9 +284,11 @@ def main(args):
         checkpoint = torch.load(args.resume, map_location="cpu")
         # print(checkpoint)
         # print(model)
-        model.load_state_dict(checkpoint,strict = 'false')
+        model.load_state_dict(checkpoint,strict = 'true')
 
-    
+    params = sum(p.numel() for p in model.parameters())
+    print(f"Model size: {params*4/1024/1024/1024:.4f} GB")
+
     print('Before loading data')
     print("Current GPU memory usage (in bytes):", torch.cuda.memory_allocated())
     print("Maximum GPU memory usage (in bytes):", torch.cuda.max_memory_allocated())
@@ -539,76 +541,76 @@ def main(args):
 
     # Training loop
     mb = master_bar(range(args.epochs))
-    # for epoch in mb:
-    #     train_loss = fit_one_epoch(model, train_loader, batch_transforms, optimizer, scheduler, mb)
-    #     # Validation loop at the end of each epoch
-    #     val_loss, recall, precision, mean_iou = evaluate(model, val_loader, batch_transforms, val_metric)
+    for epoch in mb:
+        train_loss = fit_one_epoch(model, train_loader, batch_transforms, optimizer, scheduler, mb)
+        # Validation loop at the end of each epoch
+        val_loss, recall, precision, mean_iou = evaluate(model, val_loader, batch_transforms, val_metric)
         
-    #     # print("b0 - ", train_loss)
-    #     # print("b1 - ", type(train_loss))
+        # print("b0 - ", train_loss)
+        # print("b1 - ", type(train_loss))
 
-    #     # print("b0  -  ",val_loss)
-    #     world_size = int(os.environ['WORLD_SIZE'])
-    #     train_loss, val_loss, recall, precision, mean_iou = train_loss/world_size, val_loss/world_size, recall/world_size, precision/world_size, mean_iou/world_size
+        # print("b0  -  ",val_loss)
+        world_size = int(os.environ['WORLD_SIZE'])
+        train_loss, val_loss, recall, precision, mean_iou = train_loss/world_size, val_loss/world_size, recall/world_size, precision/world_size, mean_iou/world_size
         
-    #     train_loss = torch.tensor(train_loss)
-    #     val_loss = torch.tensor(val_loss)
-    #     recall = torch.tensor(recall)
-    #     precision = torch.tensor(precision)
-    #     mean_iou = torch.tensor(mean_iou)
+        train_loss = torch.tensor(train_loss)
+        val_loss = torch.tensor(val_loss)
+        recall = torch.tensor(recall)
+        precision = torch.tensor(precision)
+        mean_iou = torch.tensor(mean_iou)
 
-    #     # print("b1  -  ",val_loss)
-    #     train_loss = train_loss.cuda()
-    #     val_loss = val_loss.cuda()
-    #     recall = recall.cuda()
-    #     precision = precision.cuda()
-    #     mean_iou = mean_iou.cuda()
+        # print("b1  -  ",val_loss)
+        train_loss = train_loss.cuda()
+        val_loss = val_loss.cuda()
+        recall = recall.cuda()
+        precision = precision.cuda()
+        mean_iou = mean_iou.cuda()
 
-    #     # print("b2  -  ",val_loss)
+        # print("b2  -  ",val_loss)
 
-    #     dist.all_reduce(train_loss, op=ReduceOp.SUM)
-    #     dist.all_reduce(val_loss, op=ReduceOp.SUM)
-    #     dist.all_reduce(recall, op=ReduceOp.SUM)
-    #     dist.all_reduce(precision, op=ReduceOp.SUM)
-    #     dist.all_reduce(mean_iou, op=ReduceOp.SUM)
+        dist.all_reduce(train_loss, op=ReduceOp.SUM)
+        dist.all_reduce(val_loss, op=ReduceOp.SUM)
+        dist.all_reduce(recall, op=ReduceOp.SUM)
+        dist.all_reduce(precision, op=ReduceOp.SUM)
+        dist.all_reduce(mean_iou, op=ReduceOp.SUM)
         
-    #     # print("b3  -  ",val_loss)
-    #     if dist.get_rank() == 0:
-    #         torch.save(model.state_dict(), f"./models/{exp_name}_epoch{epoch}.pt")
+        # print("b3  -  ",val_loss)
+        if dist.get_rank() == 0:
+            torch.save(model.state_dict(), f"./models/{exp_name}_epoch{epoch}.pt")
             
-    #         if val_loss < min_loss :
-    #             print(f"Validation loss decreased {min_loss:.6} --> {val_loss:.6}: saving state...")
-    #             min_loss = val_loss
-    #             counter = 0
-    #         else:
-    #             counter+=1
+            if val_loss < min_loss :
+                print(f"Validation loss decreased {min_loss:.6} --> {val_loss:.6}: saving state...")
+                min_loss = val_loss
+                counter = 0
+            else:
+                counter+=1
 
-    #         #check if training should be stopped
-    #         if counter == patience:
-    #             print("Validation loss hasn't improved in", patience, "epochs. Early stopping.")
-    #             break
+            #check if training should be stopped
+            if counter == patience:
+                print("Validation loss hasn't improved in", patience, "epochs. Early stopping.")
+                break
 
-    #         log_msg = f"Epoch {epoch + 1}/{args.epochs} - Validation loss: {val_loss:.6} "
-    #         if any(val is None for val in (recall, precision, mean_iou)):
-    #             log_msg += "(Undefined metric value, caused by empty GTs or predictions)"
-    #         else:
-    #             log_msg += f"(Recall: {recall:.2%} | Precision: {precision:.2%} | Mean IoU: {mean_iou:.2%})"
-    #         mb.write(log_msg)
-    #         # W&B
-    #         if args.wb:
-    #             wandb.log(
-    #                 {
-    #                     "train_loss": train_loss,
-    #                     "val_loss": val_loss,
-    #                     "average_recall": recall,
-    #                     "average_precision": precision,
-    #                     "average_mean_iou": mean_iou,
-    #                     "epoch": epoch
-    #                 }
-    #             )
+            log_msg = f"Epoch {epoch + 1}/{args.epochs} - Validation loss: {val_loss:.6} "
+            if any(val is None for val in (recall, precision, mean_iou)):
+                log_msg += "(Undefined metric value, caused by empty GTs or predictions)"
+            else:
+                log_msg += f"(Recall: {recall:.2%} | Precision: {precision:.2%} | Mean IoU: {mean_iou:.2%})"
+            mb.write(log_msg)
+            # W&B
+            if args.wb:
+                wandb.log(
+                    {
+                        "train_loss": train_loss,
+                        "val_loss": val_loss,
+                        "average_recall": recall,
+                        "average_precision": precision,
+                        "average_mean_iou": mean_iou,
+                        "epoch": epoch
+                    }
+                )
 
-    # if args.wb and dist.get_rank() == 0:
-    #     run.finish()
+    if args.wb and dist.get_rank() == 0:
+        run.finish()
 
 
 
@@ -668,27 +670,30 @@ def parse_args():
     return args
 
 #
-# def init_distributed():
+def init_distributed():
 
-#     # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-#     dist_url = "env://" # default
+    # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+    dist_url = "env://" # default
 
-#     # only works with torch.distributed.launch // torch.run
-#     rank = int(os.environ["RANK"])
-#     world_size = int(os.environ['WORLD_SIZE'])
-#     local_rank = int(os.environ['LOCAL_RANK'])
+    # only works with torch.distributed.launch // torch.run
+    rank = int(os.environ["RANK"])
+    world_size = int(os.environ['WORLD_SIZE'])
+    local_rank = int(os.environ['LOCAL_RANK'])
+    is_master = (rank == 0)
 
-#     dist.init_process_group(
-#             backend="nccl",
-#             init_method=dist_url,
-#             world_size=world_size,
-#             rank=rank)
+    dist.init_process_group(
+            backend="nccl",
+            init_method=dist_url,
+            world_size=world_size,
+            rank=rank)
 
-#     # this will make all .cuda() calls work properly
-#     torch.cuda.set_device(local_rank)
-#     # synchronizes all the threads to reach this point before moving on
-#     dist.barrier()
-#     setup_for_distributed(rank == 0)
+    # this will make all .cuda() calls work properly
+    torch.cuda.set_device(local_rank)
+    # synchronizes all the threads to reach this point before moving on
+    dist.barrier()
+    if is_master:
+        print("DDP is working correctly with {} processes.".format(world_size))
+    setup_for_distributed(rank == 0)
 
 # def init_distributed():
 #     # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
@@ -713,19 +718,24 @@ def parse_args():
 #     dist.barrier()
 #     setup_for_distributed(rank == 0)
 
-def init_distributed():
-    dist.init_process_group(backend='nccl', init_method='env://', world_size=world_size, rank=rank)
-    is_distributed = dist.is_initialized()
+# def init_distributed():
 
-    # Check if DDP is working correctly
-    rank = dist.get_rank()
-    world_size = dist.get_world_size()
-    is_master = (rank == 0)
+#     rank = dist.get_rank()
+#     world_size = dist.get_world_size()
+#     is_master = (rank == 0)
+
+#     dist.init_process_group(backend='nccl', init_method='env://', world_size=world_size, rank=rank)
+#     is_distributed = dist.is_initialized()
+
+#     # Check if DDP is working correctly
+#     # rank = dist.get_rank()
+#     # world_size = dist.get_world_size()
+#     # is_master = (rank == 0)
     
-    if is_master:
-        print("DDP is working correctly with {} processes.".format(world_size))
+#     if is_master:
+#         print("DDP is working correctly with {} processes.".format(world_size))
     
-    dist.barrier()
+#     dist.barrier()
 
 
 if __name__ == "__main__":
