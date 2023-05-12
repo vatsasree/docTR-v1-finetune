@@ -415,32 +415,38 @@ def main(args):
     e = len(easy_train_set)
     m = len(medium_train_set)
     h = len(hard_train_set)
-    N = e+m+h
-    newmedium = e* (N-m)/(N-e)
-    newhard = e* (N-h)/(N-e)
-    print("size of Easy, Newmedium, Newhard, hard, medium, Total docs (all for train set): ",e,newmedium,newhard,h,m,N)
-    new_hard_train_set = copy.deepcopy(hard_train_set)
-    while(len(new_hard_train_set) + h < newhard):
-        new_hard_train_set = torch.utils.data.ConcatDataset([new_hard_train_set, hard_train_set])
-    tail_end_size = math.floor(newhard - len(new_hard_train_set))
-    tail_end, extra = torch.utils.data.random_split(hard_train_set,[tail_end_size,h - tail_end_size])
-    new_hard_train_set = torch.utils.data.ConcatDataset([new_hard_train_set, tail_end])
+    print("Size of Easy, Medium, Hard before combining:",e,m,h)
+    # N = e+m+h
+    # newmedium = e* (N-m)/(N-e)
+    # newhard = e* (N-h)/(N-e)
+    # print("size of Easy, Newmedium, Newhard, hard, medium, Total docs (all for train set): ",e,newmedium,newhard,h,m,N)
+    # new_hard_train_set = copy.deepcopy(hard_train_set)
+    # while(len(new_hard_train_set) + h < newhard):
+    #     new_hard_train_set = torch.utils.data.ConcatDataset([new_hard_train_set, hard_train_set])
+    # tail_end_size = math.floor(newhard - len(new_hard_train_set))
+    # tail_end, extra = torch.utils.data.random_split(hard_train_set,[tail_end_size,h - tail_end_size])
+    # new_hard_train_set = torch.utils.data.ConcatDataset([new_hard_train_set, tail_end])
     
-    new_medium_train_set = copy.deepcopy(medium_train_set)
-    while(len(new_medium_train_set) + h < newmedium):
-        new_medium_train_set = torch.utils.data.ConcatDataset([new_medium_train_set, medium_train_set])
-    tail_end_size = math.floor(newmedium - len(new_medium_train_set))
-    tail_end, extra = torch.utils.data.random_split(medium_train_set,[tail_end_size,m - tail_end_size])
-    new_medium_train_set = torch.utils.data.ConcatDataset([new_medium_train_set, tail_end])
-    print("length of the new medium and hard train set: ",len(new_medium_train_set),len(new_hard_train_set))
-    train_set = torch.utils.data.ConcatDataset([easy_train_set, new_medium_train_set,new_hard_train_set])
+    # new_medium_train_set = copy.deepcopy(medium_train_set)
+    # while(len(new_medium_train_set) + h < newmedium):
+    #     new_medium_train_set = torch.utils.data.ConcatDataset([new_medium_train_set, medium_train_set])
+    # tail_end_size = math.floor(newmedium - len(new_medium_train_set))
+    # tail_end, extra = torch.utils.data.random_split(medium_train_set,[tail_end_size,m - tail_end_size])
+    # new_medium_train_set = torch.utils.data.ConcatDataset([new_medium_train_set, tail_end])
+    # print("length of the new medium and hard train set: ",len(new_medium_train_set),len(new_hard_train_set))
     
-    Nnew = e + len(new_medium_train_set) + len(new_hard_train_set)
-    M = math.floor(math.log(0.1, ((Nnew-1)/Nnew)))
+    # train_set = torch.utils.data.ConcatDataset([easy_train_set, new_medium_train_set,new_hard_train_set])
+    
+    # Nnew = e + len(new_medium_train_set) + len(new_hard_train_set)
+    # M = math.floor(math.log(0.1, ((Nnew-1)/Nnew)))
 
-    print("Length of new trainset: ", Nnew)
+    # print("Length of new trainset: ", Nnew)
     # print("Length of new trainset, number of documents seen in an epoch: ", Nnew, M)
     #
+
+    train_set = torch.utils.data.ConcatDataset([easy_train_set, medium_train_set, hard_train_set])
+    print("Length of combined train set (E+M+H):", len(train_set))
+
     train_sampler = torch.utils.data.distributed.DistributedSampler(
     	train_set,
     	shuffle = True
