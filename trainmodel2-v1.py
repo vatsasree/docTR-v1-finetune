@@ -637,7 +637,7 @@ def parse_args():
     parser.add_argument("--test_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/test", help="path to test data folder")
     parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
     parser.add_argument("--epochs", type=int, default=10, help="number of epochs to train the model on")
-    parser.add_argument("-b", "--batch_size", type=int, default=3, help="batch size for training")
+    parser.add_argument("-b", "--batch_size", type=int, default=12, help="batch size for training")
     parser.add_argument("--device", default=None, type=int, help="device")
     parser.add_argument("--input_size", type=int, default=512, help="model input size, H = W")
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate for the optimizer (Adam)")
