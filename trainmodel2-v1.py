@@ -506,7 +506,7 @@ def main(args):
         run = wandb.init(
             name=exp_name,
             id=exp_name,
-            project="train-doctr-ada-full",
+            project="FT-doctrv1",
             config={
                 "learning_rate": args.lr,
                 "epochs": args.epochs,
