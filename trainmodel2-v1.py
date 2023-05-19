@@ -628,13 +628,13 @@ def parse_args():
     )
 
     #changed
-    parser.add_argument("--easy_train_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/train/Easy", help="path to training data folder")
-    parser.add_argument("--medium_train_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/train/Medium", help="path to training data folder")
-    parser.add_argument("--hard_train_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/train/Hard", help="path to training data folder")
+    parser.add_argument("--easy_train_path", type=str,default="/scratch/sreevatsa/scratch/scratch/abhaynew/newfolder/train/Easy", help="path to training data folder")
+    parser.add_argument("--medium_train_path", type=str,default="/scratch/sreevatsa/scratch/scratch/abhaynew/newfolder/train/Medium", help="path to training data folder")
+    parser.add_argument("--hard_train_path", type=str,default="/scratch/sreevatsa/scratch/scratch/abhaynew/newfolder/train/Hard", help="path to training data folder")
 
 
-    parser.add_argument("--val_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/val", help="path to validation data folder")
-    parser.add_argument("--test_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/test", help="path to test data folder")
+    parser.add_argument("--val_path", type=str,default="/scratch/sreevatsa/scratch/scratch/abhaynew/newfolder/val", help="path to validation data folder")
+    parser.add_argument("--test_path", type=str,default="/scratch/sreevatsa/scratch/scratch/abhaynew/newfolder/test", help="path to test data folder")
     parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
     parser.add_argument("--epochs", type=int, default=10, help="number of epochs to train the model on")
     parser.add_argument("-b", "--batch_size", type=int, default=12, help="batch size for training")
