@@ -529,10 +529,12 @@ def main(args):
             }, 
             resume="allow"
         )
-    print(model)
-    print(' ')
-    print(model.named_parameters())
-    print(' ')
+        last_epoch = wandb.run.summary.get('epoch',0)
+        print('Last Epoch:',last_epoch)
+    # print(model)
+    # print(' ')
+    # print(model.named_parameters())
+    # print(' ')
     ccc=0
     for name, param in model.named_parameters():
         if param.requires_grad == True:
@@ -610,7 +612,7 @@ def main(args):
                         "average_recall": recall,
                         "average_precision": precision,
                         "average_mean_iou": mean_iou,
-                        "epoch": epoch
+                        "epoch": epoch + last_epoch + 1
                     }
                 )
 
