@@ -24,7 +24,7 @@ parser.add_argument("--ext",
             type=str, default='tif')
 parser.add_argument("--pathg", 
             help="Path to ground truth", 
-            type=str, default='./Consortium_GT/')
+            type=str, default='/share3/sreevatsa/docvisor_consortium_gt/NF/docvisor_consortium_gt')
 parser.add_argument("--paths", 
             help="Path to save files", 
             type=str, default='./docvisor_saves/Original/')
