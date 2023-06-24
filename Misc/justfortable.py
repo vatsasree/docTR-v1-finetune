@@ -24,7 +24,7 @@ parser.add_argument("--ext",
             type=str, default='tif')
 parser.add_argument("--pathg", 
             help="Path to ground truth", 
-            type=str, default='/share3/sreevatsa/docvisor_consortium_gt/NF/docvisor_consortium_gt')
+            type=str, default='/scratch/sreevatsa/docvisor_consortium_gt/')
 parser.add_argument("--paths", 
             help="Path to save files", 
             type=str, default='./docvisor_saves/Original/')
@@ -43,6 +43,9 @@ parser.add_argument("--languages",
 parser.add_argument("--test", 
             help="Is this running locally (for testing)", 
             type=bool, default=0)
+parser.add_argument("--tableFileName",
+            help="Region of interest (line or word)", 
+            type=str, default=None)            
 args = parser.parse_args()
 
 #number of images in easy/medium/hard
@@ -60,6 +63,7 @@ languages = args.languages
 #iou values to consider
 iouthresholds = args.iouthresholds
 test = args.test
+FileName = args.tableFileName
 
 print(f'K ={K}')
 print(f'extension ={ext}')
@@ -70,6 +74,7 @@ print(f'path to reclists ={path_to_reclist}')
 print(f'languages ={languages}')
 print(f'IoU thresholds ={iouthresholds}')
 print(f'Test ={test}')
+print('TableFileName=',FileName)
 
 print()
 
@@ -254,7 +259,8 @@ for i,language in enumerate(easy_dict.keys()):
     avgrecall /= K
     avgprecision /= K
     
-    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5)))
+    F1 = 2 * (avgprecision * avgrecall) / (avgprecision + avgrecall)
+    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5),round(F1,5)))
     
     avgrecall = 0
     avgprecision = 0
@@ -265,7 +271,8 @@ for i,language in enumerate(easy_dict.keys()):
     avgrecall /= K
     avgprecision /= K
     
-    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5)))
+    F1 = 2 * (avgprecision * avgrecall) / (avgprecision + avgrecall)
+    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5),round(F1,5)))
     
     avgrecall = 0
     avgprecision = 0
@@ -276,11 +283,13 @@ for i,language in enumerate(easy_dict.keys()):
     avgrecall /= K
     avgprecision /= K
     
-    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5)))
+    F1 = 2 * (avgprecision * avgrecall) / (avgprecision + avgrecall)
+    datatabulate[i].append((round(avgrecall,5),round(avgprecision,5),round(F1,5)))
     
 
 #define header names
 col_names = ["Language", "Easy","Medium","Hard"]
 print()
 #display table
-print(tabulate(datatabulate, headers=col_names))
+with open('{}.txt'.format(FileName),'w') as f:
+    print(tabulate(datatabulate, headers=col_names), file=f)
