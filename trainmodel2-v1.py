@@ -524,7 +524,7 @@ def main(args):
                 "pretrained": args.pretrained,
                 "rotation": False
             }, 
-            resume="allow"
+            resume=True
         )
         last_epoch = wandb.run.summary.get('epoch',0)
         print('Last Epoch:',last_epoch)
@@ -594,7 +594,7 @@ def main(args):
                 print("Validation loss hasn't improved in", patience, "epochs. Early stopping.")
                 break
 
-            log_msg = f"Epoch {epoch + 1}/{args.epochs} - Validation loss: {val_loss:.6} "
+            log_msg = f"Epoch {epoch}/{args.epochs} - Validation loss: {val_loss:.6} "
             if any(val is None for val in (recall, precision, mean_iou)):
                 log_msg += "(Undefined metric value, caused by empty GTs or predictions)"
             else:
@@ -609,7 +609,7 @@ def main(args):
                         "average_recall": recall,
                         "average_precision": precision,
                         "average_mean_iou": mean_iou,
-                        "epoch": epoch + 10
+                        "epoch": epoch
                     }
                 )
 
@@ -635,8 +635,8 @@ def parse_args():
     parser.add_argument("--val_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/val", help="path to validation data folder")
     parser.add_argument("--test_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/test", help="path to test data folder")
     parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
-    parser.add_argument("--epochs", type=int, default=10, help="number of epochs to train the model on")
-    parser.add_argument("-b", "--batch_size", type=int, default=9, help="batch size for training")
+    parser.add_argument("--epochs", type=int, default=25, help="number of epochs to train the model on")
+    parser.add_argument("-b", "--batch_size", type=int, default=10, help="batch size for training")
     parser.add_argument("--device", default=None, type=int, help="device")
     parser.add_argument("--input_size", type=int, default=512, help="model input size, H = W")
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate for the optimizer (Adam)")
