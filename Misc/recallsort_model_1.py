@@ -141,9 +141,14 @@ def get_precision_recall(gt, pred, iou_threshold):
     max_iou_gt = np.max(matrix, axis=1)
     max_iou_pred = np.max(matrix, axis=0)
 
-    TP = np.sum((max_iou_pred > iou_threshold) * max_iou_pred)
-    FP = max_iou_pred.shape[0] - np.sum(max_iou_pred > iou_threshold)
-    FN = np.sum(max_iou_gt < iou_threshold)
+    #weighted metric
+    # TP = np.sum((max_iou_pred > iou_threshold) * max_iou_pred)
+    # FP = max_iou_pred.shape[0] - np.sum(max_iou_pred > iou_threshold)
+    # FN = np.sum(max_iou_gt < iou_threshold)
+
+    TP = np.sum(max_iou_pred>iou_threshold)
+    FP = max_iou_pred.shape[0] - TP
+    FN = np.sum(max_iou_gt<iou_threshold)
 
     return TP / (TP + FN), TP / (TP + FP)
 
