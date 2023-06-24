@@ -583,7 +583,7 @@ def main(args):
         
         # print("b3  -  ",val_loss)
         if dist.get_rank() == 0:
-            torch.save(model.state_dict(), f"./models/{exp_name}_epoch{epoch}.pt")
+            torch.save(model.state_dict(), f"./models/{exp_name}_epoch{epoch+10}.pt")
             
             if val_loss < min_loss :
                 print(f"Validation loss decreased {min_loss:.6} --> {val_loss:.6}: saving state...")
@@ -612,7 +612,7 @@ def main(args):
                         "average_recall": recall,
                         "average_precision": precision,
                         "average_mean_iou": mean_iou,
-                        "epoch": epoch + last_epoch + 1
+                        "epoch": epoch
                     }
                 )
 
@@ -638,8 +638,8 @@ def parse_args():
     parser.add_argument("--val_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/val", help="path to validation data folder")
     parser.add_argument("--test_path", type=str,default="/scratch/sreevatsa/scratch/abhaynew/newfolder/test", help="path to test data folder")
     parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
-    parser.add_argument("--epochs", type=int, default=10, help="number of epochs to train the model on")
-    parser.add_argument("-b", "--batch_size", type=int, default=9, help="batch size for training")
+    parser.add_argument("--epochs", type=int, default=25, help="number of epochs to train the model on")
+    parser.add_argument("-b", "--batch_size", type=int, default=10, help="batch size for training")
     parser.add_argument("--device", default=None, type=int, help="device")
     parser.add_argument("--input_size", type=int, default=512, help="model input size, H = W")
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate for the optimizer (Adam)")
