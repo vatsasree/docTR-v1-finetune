@@ -40,10 +40,10 @@ parser.add_argument("--test",
             type=bool, default=0)
 parser.add_argument("--pathd", 
             help="Path to dataset", 
-            type=str, default="/scratch/sreevatsa/scratch/abhaynew/newfolder/test/images/")
+            type=str, default="/scratch/sreevatsa/merged_newdata/merged_newdata_3")
 parser.add_argument("--pathg", 
             help="Path to ground truth", 
-            type=str, default='/scratch/sreevatsa/scratch/abhaynew/newfolder/test/labels.json')
+            type=str, default='/scratch/sreevatsa/merged_newdata/merged_newdata_json.json')
 parser.add_argument("--paths", 
             help="Path to save files", 
             type=str, default='/home2/sreevatsa/reclists')
@@ -142,13 +142,13 @@ def get_precision_recall(gt, pred, iou_threshold):
     max_iou_pred = np.max(matrix, axis=0)
 
     #weighted metric
-    # TP = np.sum((max_iou_pred > iou_threshold) * max_iou_pred)
-    # FP = max_iou_pred.shape[0] - np.sum(max_iou_pred > iou_threshold)
-    # FN = np.sum(max_iou_gt < iou_threshold)
+    TP = np.sum((max_iou_pred > iou_threshold) * max_iou_pred)
+    FP = max_iou_pred.shape[0] - np.sum(max_iou_pred > iou_threshold)
+    FN = np.sum(max_iou_gt < iou_threshold)
 
-    TP = np.sum(max_iou_pred>iou_threshold)
-    FP = max_iou_pred.shape[0] - TP
-    FN = np.sum(max_iou_gt<iou_threshold)
+    # TP = np.sum(max_iou_pred>iou_threshold)
+    # FP = max_iou_pred.shape[0] - TP
+    # FN = np.sum(max_iou_gt<iou_threshold)
 
     return TP / (TP + FN), TP / (TP + FP)
 
@@ -206,11 +206,17 @@ f = open(path_to_groundtruth)
 data = json.load(f)
 f.close()
 
+exts = args.ext.split(',')
+
 dirs = []
 for root,d_names,f_names in os.walk(path_to_dataset):
     for f in f_names:
-        if(f[-len(ext):] == ext):
-            dirs.append(os.path.join(root, f))
+        # # if(f[-len(ext):] == ext):
+        # dirs.append(os.path.join(root, f))
+        for ext in exts:
+            if f.endswith(ext):
+                dirs.append(os.path.join(root, f))
+                break
 
 print(f"Running for test dataset....")
 
@@ -226,10 +232,12 @@ for c,directory in tqdm(enumerate(dirs)):
         print('Got preds')
 
     gt = []
-    for i,region in enumerate(data[test_img_path]["polygons"]):
-        p1 = region[0]
-        p2 = region[2]
-        gt.append([p1[0],p1[1],p2[0],p2[1]])
+    for i, word in enumerate(data[test_img_path]['words']):
+        gt.append(word['groundTruth'])
+    # for i,region in enumerate(data[test_img_path]["polygons"]):
+    #     p1 = region[0]
+    #     p2 = region[2]
+    #     gt.append([p1[0],p1[1],p2[0],p2[1]])
     gt = torch.Tensor(gt)
 
     if(c%100 == 0):
@@ -253,7 +261,7 @@ res = ''
 if isinstance(args.resume, str):
     file_name = os.path.basename(args.resume)
     exp_name = file_name[:file_name.find("_epoch")]
-    res = '_finetuned_' + exp_name
+    res = '_finetuned_' + exp_name + "neeeew_data_2"
 outfile = open(path_to_save + "image_recall_list" + res +".json","w")
 json.dump(image_recall_list, outfile, indent = 6)
 outfile.close()
